@@ -108,10 +108,12 @@ $ = {
 var successCallback = function(response){
             console.log(response);
           };
+var successCallbackTwo = function(response){
+  setTimeout(successCallback, 2000, response);
+};
 
 var callback = {
   success: function() {
-    throw "KIT";
     console.log("WAY TO GO");
   },
 
@@ -120,8 +122,21 @@ var callback = {
   }
 }
 
-var p = $.get("http://reqres.in/api/unknown/23", null, successCallback, "text").then(callback.success, callback.error)
+// var p = $.get("http://reqres.in/api/unknown/23", null, successCallback, "text").then(callback.success, callback.error)
 
+var button = document.getElementById('myButton');
+button.addEventListener("click", function(e){
+  e.preventDefault();
+  console.log("click fired");
+  var p = $.get("http://reqres.in/api/users", null, successCallback, "text");
+  var q = $.get("http://reqres.in/api/users", null, successCallback, "text");
+  var r = new Promise(function(resolve, reject){
+    setTimeout(resolve, 5000);
+  });
+  var promises = Promise.all([p, q, r]);
+  //console.log(promises);
+  promises.then(callback.success);
+})
 
 // $.ajax({method: "get",
 //           url: "http://reqres.in/api/users",
