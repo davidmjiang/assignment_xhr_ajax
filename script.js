@@ -19,54 +19,67 @@
 
 $ = {
   ajax: function(options) {
-    var xhr = new XMLHttpRequest();
+    var promise = new Promise( function (resolve, reject) {
+      var xhr = new XMLHttpRequest();
 
-    if (options.complete) {
-      xhr.addEventListener( "load", function() {
-        options.complete(this, this.statusText);
-      });
-      xhr.addEventListener( "error", function() {
-        options.complete(this, this.statusText, this.status);
-      });
-    }
-
-    if (options.error) {
-      xhr.addEventListener( "error", function() {
-        options.error(this, this.statusText, this.status);
-      });
-    }
-
-    if (options.headers) {
-      for (var header in options.headers ) {
-        xhr.setRequestHeader(header, options.headers[header]);
+      if (options.complete) {
+        xhr.addEventListener( "load", function() {
+          options.complete(this, this.statusText);
+        });
+        xhr.addEventListener( "error", function() {
+          options.complete(this, this.statusText, this.status);
+        });
       }
-    }
 
-    if (options.success) {
-      xhr.addEventListener("load", function() {
-        options.success(this.responseText, this.statusText, this);
-      });
-    }
+      if (options.error) {
+        xhr.addEventListener( "error", function() {
+          console.log("WHY ARE YOU DIONG THIS")
+          reject(this.statusText);
+          options.error(this, this.statusText, this.status);
+        });
+      }
 
-    if (options.dataType){
-      xhr.responseType = options.dataType;
-    }
-   
-    if (options.method) {
-      var method = options.method;
-    }
+      if (options.headers) {
+        for (var header in options.headers ) {
+          xhr.setRequestHeader(header, options.headers[header]);
+        }
+      }
 
-    if (options.url){
-      var url = options.url;
-    }
+      if (options.success) {
+        xhr.addEventListener("load", function() {
+          if (this.status >= 200 && this.status < 400 ) {
+            console.log("NO ERRORS")
+            resolve(this.response);
+            options.success(this.responseText, this.statusText, this);
+          } else {
+            console.log("ERRORS")
+            reject(this.statusText);
+            options.error(this, this.statusText, this.status);
+          }
+        });
+      }
 
-    if (options.async){
-      var async = options.async;
-    }
+      if (options.dataType){
+        xhr.responseType = options.dataType;
+      }
 
-    xhr.open(method, url, async);
+      if (options.method) {
+        var method = options.method;
+      }
 
-    xhr.send(options.data); 
+      if (options.url){
+        var url = options.url;
+      }
+
+      if (options.async){
+        var async = options.async;
+      }
+
+      xhr.open(method, url, async);
+
+      xhr.send(options.data);
+    });
+    return promise;
   },
 
   get: function(url, data, success, dataType){
@@ -77,7 +90,18 @@ $ = {
                    success: success,
                    dataType: dataType
                 };
-     $.ajax(options);
+     return $.ajax(options);
+  },
+
+  post: function(url, data, success, dataType){
+    var options = {method: "post",
+                   async: true,
+                   url: url,
+                   data: data,
+                   success: success,
+                   dataType: dataType
+                };
+     return $.ajax(options);
   }
 }
 
@@ -85,9 +109,21 @@ var successCallback = function(response){
             console.log(response);
           };
 
-$.get("http://reqres.in/api/users", null, successCallback, "text");
+var callback = {
+  success: function() {
+    throw "KIT";
+    console.log("WAY TO GO");
+  },
 
-// $.ajax({method: "get", 
+  error: function() {
+    console.log("BOOOO")
+  }
+}
+
+var p = $.get("http://reqres.in/api/unknown/23", null, successCallback, "text").then(callback.success, callback.error)
+
+
+// $.ajax({method: "get",
 //           url: "http://reqres.in/api/users",
 //           async: true,
 //           success: function(response){
