@@ -6,7 +6,7 @@
   // xhr.send();
 
 
-  // // Create a post
+  // Create a post
   // var xhr = new XMLHttpRequest();
   // xhr.addEventListener( "load", function(){
   //     console.log( this );
